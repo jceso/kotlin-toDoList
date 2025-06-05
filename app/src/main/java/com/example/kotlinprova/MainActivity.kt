@@ -2,16 +2,22 @@ package com.example.kotlinprova
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.view.View
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
 import com.example.kotlinprova.models.TaskAdapter
 import com.example.kotlinprova.models.TaskDatabase
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
@@ -30,8 +36,7 @@ class MainActivity : AppCompatActivity() {
 
         val addButton = findViewById<FloatingActionButton>(R.id.add_button)
         addButton.setOnClickListener {
-            val intent = Intent(this, AddTask::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, AddTask::class.java))
             finish()
         }
 
@@ -42,7 +47,24 @@ class MainActivity : AppCompatActivity() {
         recyclerView.layoutManager = LinearLayoutManager(this)
 
         val tasks = db.taskDao().getAll()
-        adapter = TaskAdapter(tasks)
-        recyclerView.adapter = adapter
+        if (tasks.isEmpty()) {
+            recyclerView.visibility = View.GONE
+            findViewById<TextView>(R.id.empty_list).visibility = View.VISIBLE
+        } else {
+            recyclerView.visibility = View.VISIBLE
+            findViewById<TextView>(R.id.empty_list).visibility = View.GONE
+
+            lifecycleScope.launch {
+                val tasks = db.taskDao().getAll()
+                adapter = TaskAdapter(tasks) { updatedTask ->
+                    lifecycleScope.launch {
+                        db.taskDao().update(updatedTask)
+                    }
+                }
+
+                recyclerView.adapter = adapter
+            }
+            recyclerView.adapter = adapter
+        }
     }
 }

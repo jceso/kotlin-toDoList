@@ -2,6 +2,7 @@ package com.example.kotlinprova
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -18,6 +19,7 @@ import com.example.kotlinprova.models.Task
 import com.example.kotlinprova.models.TaskDatabase
 import kotlinx.coroutines.*
 import java.util.Calendar
+import java.util.Locale
 
 class AddTask : AppCompatActivity() {
     private lateinit var titleET: EditText
@@ -65,6 +67,7 @@ class AddTask : AppCompatActivity() {
                     withContext(Dispatchers.IO) { taskDao.insert(newTask) }
                     Toast.makeText(this@AddTask, "Task salvata!", Toast.LENGTH_SHORT).show()
                     Log.d("AddTask", "Task aggiunta al database: $newTask")
+                    startActivity(Intent(this@AddTask, MainActivity::class.java))
                     finish()
                 }
             } else
@@ -87,7 +90,7 @@ class AddTask : AppCompatActivity() {
                         calendar.set(Calendar.MINUTE, minute)
 
                         // Formatta data/ora e mostrala nel TextView
-                        val formatted = String.format("%02d/%02d/%04d %02d:%02d", dayOfMonth, month + 1, year, hourOfDay, minute)
+                        val formatted = String.format(Locale.getDefault(), "%02d/%02d/%04d %02d:%02d", dayOfMonth, month + 1, year, hourOfDay, minute)
                         dueTime.text = formatted
                     },
                     calendar.get(Calendar.HOUR_OF_DAY),
