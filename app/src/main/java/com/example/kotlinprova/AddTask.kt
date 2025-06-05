@@ -3,20 +3,27 @@ package com.example.kotlinprova
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.os.Bundle
+import android.util.Log
+import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.lifecycle.lifecycleScope
 import androidx.room.Room
-import com.example.kotlinprova.models.TaskAdapter
+import com.example.kotlinprova.models.Task
 import com.example.kotlinprova.models.TaskDatabase
+import kotlinx.coroutines.*
 import java.util.Calendar
 
 class AddTask : AppCompatActivity() {
+    private lateinit var titleET: EditText
+    private lateinit var descET: EditText
     private lateinit var dueTime: TextView
+    private lateinit var saveBtn: Button
     private val calendar = Calendar.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,6 +40,36 @@ class AddTask : AppCompatActivity() {
         dueTime.setOnClickListener {
             showDateTimePicker()
         }
+
+        titleET = findViewById(R.id.title)
+        descET = findViewById(R.id.desc)
+        saveBtn = findViewById(R.id.save_btn)
+
+        val db = Room.databaseBuilder(applicationContext, TaskDatabase::class.java, "task-db").build()
+        val taskDao = db.taskDao()
+
+        saveBtn.setOnClickListener {
+            val title = titleET.text.toString().trim()
+            val description = descET.text.toString().trim()
+            val dueTimeMillis = calendar.timeInMillis
+
+            if (title.isNotEmpty() && description.isNotEmpty()) {
+                val newTask = Task(
+                    title = title,
+                    desc = description,
+                    dueTime = dueTimeMillis,
+                    isCompleted = false
+                )
+
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) { taskDao.insert(newTask) }
+                    Toast.makeText(this@AddTask, "Task salvata!", Toast.LENGTH_SHORT).show()
+                    Log.d("AddTask", "Task aggiunta al database: $newTask")
+                    finish()
+                }
+            } else
+                Toast.makeText(this, "Completa tutti i campi", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun showDateTimePicker() {
@@ -52,12 +89,6 @@ class AddTask : AppCompatActivity() {
                         // Formatta data/ora e mostrala nel TextView
                         val formatted = String.format("%02d/%02d/%04d %02d:%02d", dayOfMonth, month + 1, year, hourOfDay, minute)
                         dueTime.text = formatted
-
-                        val dueTimeMillis: Long = calendar.timeInMillis
-
-                        // Ora puoi usare `dueTimeMillis` per salvarlo nella tua Task
-                        // Esempio:
-                        // val task = Task(title, description, dueTime = dueTimeMillis)
                     },
                     calendar.get(Calendar.HOUR_OF_DAY),
                     calendar.get(Calendar.MINUTE),

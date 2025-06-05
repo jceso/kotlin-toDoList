@@ -1,5 +1,6 @@
 package com.example.kotlinprova
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -10,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.room.Room
 import com.example.kotlinprova.models.TaskAdapter
 import com.example.kotlinprova.models.TaskDatabase
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
@@ -26,6 +28,12 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        val addButton = findViewById<FloatingActionButton>(R.id.add_button)
+        addButton.setOnClickListener {
+            val intent = Intent(this, AddTask::class.java)
+            startActivity(intent)
+            finish()
+        }
 
         db = Room.databaseBuilder(applicationContext, TaskDatabase::class.java, "task-db")
             .allowMainThreadQueries().build()

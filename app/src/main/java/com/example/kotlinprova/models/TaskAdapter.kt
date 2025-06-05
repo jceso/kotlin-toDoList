@@ -6,7 +6,9 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.kotlinprova.R
-import java.time.LocalTime
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 class TaskAdapter(private val tasks: List<Task>) :
     RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
@@ -25,7 +27,15 @@ class TaskAdapter(private val tasks: List<Task>) :
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
         val task = tasks[position]
         holder.title.text = task.title
-        holder.time.text = LocalTime.ofSecondOfDay(task.dueTime!! / 1000).toString()
+
+        task.dueTime?.let { dueTimeMillis ->
+            val dateTime = Instant.ofEpochMilli(dueTimeMillis)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime()
+
+            val formatted = dateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
+            holder.time.text = formatted
+        }
     }
 
     override fun getItemCount(): Int = tasks.size
