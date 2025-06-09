@@ -13,7 +13,7 @@ class Task(
     @ColumnInfo(name = "title") val title: String,                // Titolo della task
     @ColumnInfo(name = "desc") val desc: String,                // Descrizione
     @ColumnInfo(name = "dueTimeLong") val dueTime: Long?,       // Data di scadenza (opzionale)
-    @ColumnInfo(name = "isCompleted") val isCompleted: Boolean, // Stato della task (completata/non completata)
+    @ColumnInfo(name = "isCompleted") var isCompleted: Boolean, // Stato della task (completata/non completata)
 )
 {
     fun dueTime(): LocalTime? = if (dueTime == null) null
